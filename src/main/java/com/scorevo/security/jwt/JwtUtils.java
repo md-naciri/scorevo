@@ -17,7 +17,7 @@ import java.util.Base64;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${scorevo.app.jwtSecret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${scorevo.app.jwtExpirationMs}")
