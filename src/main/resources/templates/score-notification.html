@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #1E293B;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1E293B;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #F8FAFC;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #F59E0B;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #E08900;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #64748B;
+            margin-top: 40px;
+        }
+        .score-update {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            border-left: 3px solid #F59E0B;
+            text-align: center;
+        }
+        .score-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .score-positive {
+            color: #10B981; /* Green */
+        }
+        .score-negative {
+            color: #B91C1C; /* Red */
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <img src="https://example.com/scorevo-logo.png" alt="Scorevo Logo" class="logo">
+    <h1>Score Update</h1>
+</div>
+
+<div class="content">
+    <p>Hi <span th:text="${user.username}">John</span>,</p>
+
+    <p>
+        Your score has been updated in the activity "<span th:text="${activity.name}">Activity Name</span>".
+    </p>
+
+    <div class="score-update">
+        <p>Score Change:</p>
+        <div class="score-value" th:classappend="${points > 0} ? 'score-positive' : 'score-negative'">
+            <span th:if="${points > 0}" th:text="'+' + ${points}">+5</span>
+            <span th:if="${points < 0}" th:text="${points}">-5</span>
+            <span th:if="${points == 0}">0</span>
+        </div>
+
+        <p th:if="${activity.mode.name() == 'FREE_INCREMENT'}">
+            <span th:if="${points > 0}">Congratulations on earning points!</span>
+            <span th:if="${points < 0}">Your score has been adjusted.</span>
+        </p>
+
+        <p th:if="${activity.mode.name() == 'PENALTY_BALANCE'}">
+            <span th:if="${points > 0}">A mistake has been recorded.</span>
+            <span th:if="${points < 0}">Your score has been reduced as another player made a mistake.</span>
+        </p>
+    </div>
+
+    <div style="text-align: center;">
+        <a th:href="${dashboardLink}" class="button">View Activity Dashboard</a>
+    </div>
+
+    <p>
+        Best regards,<br>
+        The Scorevo Team
+    </p>
+</div>
+
+<div class="footer">
+    <p>You received this email because you are a participant in a Scorevo activity.</p>
+    <p>© 2025 Scorevo. All Rights Reserved.</p>
+</div>
+</body>
+</html>

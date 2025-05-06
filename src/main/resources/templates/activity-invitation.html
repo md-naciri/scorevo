@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Invitation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #1E293B;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1E293B;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #F8FAFC;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #F59E0B;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #E08900;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #64748B;
+            margin-top: 40px;
+        }
+        .activity-details {
+            margin: 25px 0;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            border-left: 3px solid #F59E0B;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <img src="https://example.com/scorevo-logo.png" alt="Scorevo Logo" class="logo">
+    <h1>You're Invited to an Activity!</h1>
+</div>
+
+<div class="content">
+    <p>Hi there,</p>
+
+    <p>
+        <strong th:text="${inviter.username}">John Doe</strong> has invited you to join an activity on Scorevo!
+    </p>
+
+    <div class="activity-details">
+        <h2 th:text="${activity.name}">Activity Name</h2>
+        <p th:text="${activity.description}">Activity description goes here.</p>
+        <p>
+            <strong>Mode:</strong>
+            <span th:if="${activity.mode.name() == 'FREE_INCREMENT'}">Free Mode</span>
+            <span th:if="${activity.mode.name() == 'PENALTY_BALANCE'}">Penalty Mode</span>
+        </p>
+    </div>
+
+    <p th:if="${isExistingUser}">
+        Click the button below to join the activity and start participating!
+    </p>
+
+    <p th:unless="${isExistingUser}">
+        You'll need to create a Scorevo account to join this activity. Click the button below to sign up and get started!
+    </p>
+
+    <div style="text-align: center;">
+        <a th:href="${invitationLink}" class="button">
+            <span th:if="${isExistingUser}">Join Activity</span>
+            <span th:unless="${isExistingUser}">Create Account & Join</span>
+        </a>
+    </div>
+
+    <p>If you have any questions, simply reply to this email.</p>
+
+    <p>
+        Best regards,<br>
+        The Scorevo Team
+    </p>
+</div>
+
+<div class="footer">
+    <p>This invitation was sent to you because a Scorevo user added you to an activity.</p>
+    <p>© 2025 Scorevo. All Rights Reserved.</p>
+</div>
+</body>
+</html>
