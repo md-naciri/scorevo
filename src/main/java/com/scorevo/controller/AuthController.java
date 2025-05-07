@@ -10,6 +10,7 @@ import com.scorevo.repository.RoleRepository;
 import com.scorevo.repository.UserRepository;
 import com.scorevo.security.jwt.JwtUtils;
 import com.scorevo.security.model.SecurityUser;
+import com.scorevo.service.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -80,6 +81,9 @@ public class AuthController {
                 roles));
     }
 
+    @Autowired
+    private InvitationService invitationService;
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -124,7 +128,10 @@ public class AuthController {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Process any pending invitations for this user
+        invitationService.processInvitationsForNewUser(savedUser.getId(), savedUser.getEmail());
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
