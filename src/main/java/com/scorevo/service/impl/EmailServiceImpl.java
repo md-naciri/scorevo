@@ -4,9 +4,9 @@ import com.scorevo.model.Activity;
 import com.scorevo.model.Invitation;
 import com.scorevo.model.User;
 import com.scorevo.repository.ActivityRepository;
+import com.scorevo.repository.InvitationRepository;
 import com.scorevo.repository.UserRepository;
 import com.scorevo.service.EmailService;
-import com.scorevo.service.InvitationService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,11 +20,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Optional;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-
-
 
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
@@ -40,18 +39,14 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private InvitationRepository invitationRepository;
+
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-//    @Value("${spring.mail.username}")
-//    private String fromEmail;
-
     @Value("${spring.mail.from}")
     private String fromEmail;
-
-
-    @Autowired
-    private InvitationService invitationService;
 
     @Override
     public boolean sendActivityInvitation(Long activityId, String email, Long invitedBy) {
@@ -67,8 +62,21 @@ public class EmailServiceImpl implements EmailService {
             // Check if the invited email is already a registered user
             boolean isExistingUser = userRepository.findByEmail(email).isPresent();
 
-            // Create or get invitation
-            Invitation invitation = invitationService.createInvitation(activityId, email, invitedBy);
+            // Look for existing invitation or create new one
+            Invitation invitation;
+            Optional<Invitation> existingInvitation = invitationRepository.findByEmailAndActivityIdAndIsAccepted(
+                    email, activityId, false);
+
+            if (existingInvitation.isPresent()) {
+                invitation = existingInvitation.get();
+            } else {
+                // Create new invitation
+                invitation = new Invitation();
+                invitation.setEmail(email);
+                invitation.setActivity(activity);
+                invitation.setInvitedBy(inviter);
+                invitation = invitationRepository.save(invitation);
+            }
 
             // Prepare the email content
             Context context = new Context();
@@ -126,30 +134,30 @@ public class EmailServiceImpl implements EmailService {
             context.setVariable("user", user);
             context.setVariable("points", points);
             context.setVariable("dashboardLink", frontendUrl + "/activities/" + activityId);
-            
+
             // Process template with context
             String emailContent = templateEngine.process("score-notification", context);
-            
+
             // Send the email
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(fromEmail);
             helper.setTo(user.getEmail());
-            
+
             String subject;
             if (points > 0) {
                 subject = "You've received " + points + " points in " + activity.getName();
             } else {
                 subject = "Your score has changed in " + activity.getName();
             }
-            
+
             helper.setSubject(subject);
             helper.setText(emailContent, true);
-            
+
             mailSender.send(message);
             logger.info("Score notification email sent to: {}", user.getEmail());
             return true;
-            
+
         } catch (MessagingException | EntityNotFoundException e) {
             logger.error("Failed to send score notification email to user ID: {}", userId, e);
             return false;

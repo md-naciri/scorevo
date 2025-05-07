@@ -93,4 +93,14 @@ public class InvitationController {
         SecurityUser userDetails = (SecurityUser) authentication.getPrincipal();
         return userDetails.getUser().getEmail();
     }
+
+    /**
+     * Decline an invitation
+     */
+    @PostMapping("/decline/{token}")
+    public ResponseEntity<?> declineInvitation(@PathVariable("token") String token) {
+        Long userId = getCurrentUserId();
+        MessageResponse response = invitationService.declineInvitation(token, userId);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -36,4 +36,9 @@ public interface InvitationService {
      * Clean up expired invitations
      */
     void cleanupExpiredInvitations();
+
+    /**
+     * Decline an invitation
+     */
+    MessageResponse declineInvitation(String token, Long userId);
 }
