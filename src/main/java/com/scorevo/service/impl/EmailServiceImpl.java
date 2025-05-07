@@ -18,8 +18,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+
 @Service
 public class EmailServiceImpl implements EmailService {
+
+
 
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
@@ -38,8 +41,12 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    @Value("${spring.mail.username}")
+//    @Value("${spring.mail.username}")
+//    private String fromEmail;
+
+    @Value("${spring.mail.from}")
     private String fromEmail;
+
 
     @Override
     public boolean sendActivityInvitation(Long activityId, String email, Long invitedBy) {
@@ -82,12 +89,13 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(email);
             helper.setSubject(inviter.getUsername() + " invited you to " + activity.getName() + " on Scorevo");
             helper.setText(emailContent, true);
-            
+
+            // Send the email
             mailSender.send(message);
             logger.info("Activity invitation email sent to: {}", email);
             return true;
-            
-        } catch (MessagingException | EntityNotFoundException e) {
+        } catch (Exception e) {
+            // Log the error but don't fail the operation
             logger.error("Failed to send activity invitation email to: {}", email, e);
             return false;
         }

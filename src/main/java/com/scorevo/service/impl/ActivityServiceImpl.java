@@ -12,6 +12,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +26,9 @@ public class ActivityServiceImpl implements ActivityService {
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+
+    private static final Logger logger = LoggerFactory.getLogger(ActivityServiceImpl.class);
+
 
     @Autowired
     public ActivityServiceImpl(
@@ -160,21 +165,29 @@ public class ActivityServiceImpl implements ActivityService {
                 activity.getParticipants().add(user);
                 activityRepository.save(activity);
 
-                // Send notification email
-                emailService.sendActivityInvitation(activityId, email, currentUserId);
+                // Try to send email but don't break if it fails
+                try {
+                    emailService.sendActivityInvitation(activityId, email, currentUserId);
+                } catch (Exception e) {
+                    logger.error("Failed to send invitation email, but user was added", e);
+                }
 
                 return new MessageResponse("User has been added to the activity");
             } else {
                 return new MessageResponse("User is already a participant in this activity");
             }
         } else {
-            // User doesn't exist, send invitation email
-            boolean emailSent = emailService.sendActivityInvitation(activityId, email, currentUserId);
-
-            if (emailSent) {
-                return new MessageResponse("Invitation has been sent to " + email);
-            } else {
-                return new MessageResponse("Failed to send invitation to " + email);
+            // User doesn't exist, try to send invitation email
+            try {
+                boolean emailSent = emailService.sendActivityInvitation(activityId, email, currentUserId);
+                if (emailSent) {
+                    return new MessageResponse("Invitation has been sent to " + email);
+                } else {
+                    return new MessageResponse("Failed to send invitation to " + email + ". Please try again later.");
+                }
+            } catch (Exception e) {
+                logger.error("Failed to send invitation email", e);
+                return new MessageResponse("Failed to send invitation to " + email + ". Please try again later.");
             }
         }
     }

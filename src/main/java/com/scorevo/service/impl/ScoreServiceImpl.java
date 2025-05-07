@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -124,7 +125,12 @@ public class ScoreServiceImpl implements ScoreService {
         Score savedScore = scoreRepository.save(score);
 
         // Send score notification email
-        emailService.sendScoreNotification(activityId, user.getId(), scoreRequest.getPoints());
+        try {
+            emailService.sendScoreNotification(activityId, user.getId(), scoreRequest.getPoints());
+        } catch (Exception e) {
+            // Log the error but don't fail the operation if email sending fails
+            System.err.println("Failed to send score notification email: " + e.getMessage());
+        }
 
         return savedScore;
     }
@@ -170,16 +176,23 @@ public class ScoreServiceImpl implements ScoreService {
         Score savedScore = scoreRepository.save(score);
 
         // Send score notification to the user who made the mistake
-        emailService.sendScoreNotification(activityId, userWithMistake.getId(), scoreRequest.getPoints());
+        try {
+            emailService.sendScoreNotification(activityId, userWithMistake.getId(), scoreRequest.getPoints());
+        } catch (Exception e) {
+            // Log the error but don't fail the operation if email sending fails
+            System.err.println("Failed to send score notification email: " + e.getMessage());
+        }
 
         // Now adjust the other participants' scores if necessary
         // In Penalty Balance mode, we need to handle the balancing of points
 
-        // Get all participants except the user who made the mistake
-        List<User> otherParticipants = activity.getParticipants()
-                .stream()
-                .filter(p -> !p.getId().equals(userWithMistake.getId()))
-                .toList();
+        // IMPORTANT: Create a new list to avoid ConcurrentModificationException
+        List<User> otherParticipants = new ArrayList<>();
+        for (User participant : activity.getParticipants()) {
+            if (!participant.getId().equals(userWithMistake.getId())) {
+                otherParticipants.add(participant);
+            }
+        }
 
         // For each other participant, reduce their score (if they have any)
         for (User otherUser : otherParticipants) {
@@ -200,7 +213,12 @@ public class ScoreServiceImpl implements ScoreService {
                 scoreRepository.save(reductionScore);
 
                 // Send notification about the score reduction
-                emailService.sendScoreNotification(activityId, otherUser.getId(), -reduction);
+                try {
+                    emailService.sendScoreNotification(activityId, otherUser.getId(), -reduction);
+                } catch (Exception e) {
+                    // Log the error but don't fail the operation if email sending fails
+                    System.err.println("Failed to send score reduction notification email: " + e.getMessage());
+                }
             }
         }
 
