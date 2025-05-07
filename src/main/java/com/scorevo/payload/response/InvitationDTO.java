@@ -1,4 +1,3 @@
-// src/main/java/com/scorevo/payload/response/InvitationDTO.java
 package com.scorevo.payload.response;
 
 import lombok.Data;

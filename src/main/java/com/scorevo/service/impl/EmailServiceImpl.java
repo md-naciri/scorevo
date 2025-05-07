@@ -1,10 +1,12 @@
 package com.scorevo.service.impl;
 
 import com.scorevo.model.Activity;
+import com.scorevo.model.Invitation;
 import com.scorevo.model.User;
 import com.scorevo.repository.ActivityRepository;
 import com.scorevo.repository.UserRepository;
 import com.scorevo.service.EmailService;
+import com.scorevo.service.InvitationService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,6 +50,9 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
 
+    @Autowired
+    private InvitationService invitationService;
+
     @Override
     public boolean sendActivityInvitation(Long activityId, String email, Long invitedBy) {
         try {
@@ -62,26 +67,29 @@ public class EmailServiceImpl implements EmailService {
             // Check if the invited email is already a registered user
             boolean isExistingUser = userRepository.findByEmail(email).isPresent();
 
+            // Create or get invitation
+            Invitation invitation = invitationService.createInvitation(activityId, email, invitedBy);
+
             // Prepare the email content
             Context context = new Context();
             context.setVariable("activity", activity);
             context.setVariable("inviter", inviter);
             context.setVariable("isExistingUser", isExistingUser);
-            
+
             // Generate different links based on whether the user exists
             String invitationLink;
             if (isExistingUser) {
-                // Direct link to join the activity
-                invitationLink = frontendUrl + "/activities/join/" + activityId;
+                // Direct link to accept invitation
+                invitationLink = frontendUrl + "/invitations/accept/" + invitation.getToken();
             } else {
                 // Link to register and then join
-                invitationLink = frontendUrl + "/auth/register?invitedTo=" + activityId;
+                invitationLink = frontendUrl + "/auth/register?invitation=" + invitation.getToken();
             }
             context.setVariable("invitationLink", invitationLink);
-            
+
             // Process template with context
             String emailContent = templateEngine.process("activity-invitation", context);
-            
+
             // Send the email
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

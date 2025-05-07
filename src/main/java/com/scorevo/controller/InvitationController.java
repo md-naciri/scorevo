@@ -1,4 +1,3 @@
-// src/main/java/com/scorevo/controller/InvitationController.java
 package com.scorevo.controller;
 
 import com.scorevo.model.Invitation;
