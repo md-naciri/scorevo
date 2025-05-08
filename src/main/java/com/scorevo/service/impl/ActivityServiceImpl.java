@@ -193,7 +193,7 @@ public class ActivityServiceImpl implements ActivityService {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
+//            User user = userOptional.get();
 
             // CHANGE: Don't automatically add the user as a participant
             // Instead, create a pending invitation that requires acceptance
@@ -222,7 +222,7 @@ public class ActivityServiceImpl implements ActivityService {
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + currentUserId));
 
             invitation.setInvitedBy(inviter);
-            invitation.setIsAccepted(false); // Important: Set this to false to require acceptance
+            invitation.setIsAccepted(false); // Important: Set this to "false" to require acceptance
             invitationRepository.save(invitation);
 
             // Send email invitation
