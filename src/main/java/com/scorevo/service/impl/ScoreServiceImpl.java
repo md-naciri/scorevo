@@ -29,7 +29,7 @@ public class ScoreServiceImpl implements ScoreService {
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
     private final ActivityService activityService;
-    private final EmailService emailService;
+//    private final EmailService emailService;
 
     @Autowired
     public ScoreServiceImpl(
@@ -42,7 +42,7 @@ public class ScoreServiceImpl implements ScoreService {
         this.activityRepository = activityRepository;
         this.userRepository = userRepository;
         this.activityService = activityService;
-        this.emailService = emailService;
+//        this.emailService = emailService;
     }
 
     @Override
@@ -126,12 +126,12 @@ public class ScoreServiceImpl implements ScoreService {
         Score savedScore = scoreRepository.save(score);
 
         // Send score notification email
-        try {
-            emailService.sendScoreNotification(activityId, user.getId(), scoreRequest.getPoints());
-        } catch (Exception e) {
-            // Log the error but don't fail the operation if email sending fails
-            System.err.println("Failed to send score notification email: " + e.getMessage());
-        }
+//        try {
+//            emailService.sendScoreNotification(activityId, user.getId(), scoreRequest.getPoints());
+//        } catch (Exception e) {
+//            // Log the error but don't fail the operation if email sending fails
+//            System.err.println("Failed to send score notification email: " + e.getMessage());
+//        }
 
         return savedScore;
     }
@@ -305,12 +305,12 @@ public class ScoreServiceImpl implements ScoreService {
                     netPointsForMistakeMaker -= reductionAmount;
 
                     // Send notification about the score reduction
-                    try {
-                        emailService.sendScoreNotification(activityId, otherUser.getId(), -reductionAmount);
-                    } catch (Exception e) {
-                        System.err.println("Failed to send score reduction notification email to user "
-                                + otherUser.getId() + ": " + e.getMessage());
-                    }
+//                    try {
+//                        emailService.sendScoreNotification(activityId, otherUser.getId(), -reductionAmount);
+//                    } catch (Exception e) {
+//                        System.err.println("Failed to send score reduction notification email to user "
+//                                + otherUser.getId() + ": " + e.getMessage());
+//                    }
                 }
             }
         }
@@ -327,12 +327,12 @@ public class ScoreServiceImpl implements ScoreService {
 
         // Send score notification to the user who made the mistake,
         // reflecting the actual points added after any offsets.
-        try {
-            emailService.sendScoreNotification(activityId, userWithMistake.getId(), netPointsForMistakeMaker);
-        } catch (Exception e) {
-            System.err.println("Failed to send score notification email to user "
-                    + userWithMistake.getId() + ": " + e.getMessage());
-        }
+//        try {
+//            emailService.sendScoreNotification(activityId, userWithMistake.getId(), netPointsForMistakeMaker);
+//        } catch (Exception e) {
+//            System.err.println("Failed to send score notification email to user "
+//                    + userWithMistake.getId() + ": " + e.getMessage());
+//        }
 
         return savedScore; // Return the score object created for the user who made the mistake
     }
